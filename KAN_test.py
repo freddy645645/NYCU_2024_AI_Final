@@ -13,9 +13,10 @@ from finrl.config import INDICATORS
 from finrl.plot import backtest_stats
 
 # Contestants are welcome to split the data in their own way for model tuning
-TRADE_START_DATE = '2011-01-01'
-TRADE_END_DATE = '2012-01-01'
-FILE_PATH = 'train_data.csv'
+TRADE_START_DATE = '2023-10-25'
+TRADE_END_DATE = '2024-04-24'
+TRAIN_FILE_PATH = 'train_data.csv'
+TRADE_FILE_PATH = 'trade_data.csv'
 
 
 # PPO configs
@@ -26,24 +27,39 @@ PPO_PARAMS = {
     "batch_size": 128,
 }
 
+def handle_diff(trade_file=TRADE_FILE_PATH, train_file=TRAIN_FILE_PATH):
+    # Handle the difference between the two datasets
+    data1 = pd.read_csv(trade_file)
+    data2 = pd.read_csv(train_file)
+    
+    dim1 = data1.tic.unique()
+    dim2 = data2.tic.unique()
+    
+    diff = set(dim1) - set(dim2)
+    for d in diff:
+        data1 = data1[data1.tic != d]
+        
+    return data1
+
 
 if __name__ == '__main__':
     # We will use unseen, post-deadline data for testing
     parser = argparse.ArgumentParser(description='Description of program')
-    parser.add_argument('--start_date', default=TRADE_START_DATE, help='Trade start date (default: {})'.format(TRADE_START_DATE))
-    parser.add_argument('--end_date', default=TRADE_END_DATE, help='Trade end date (default: {})'.format(TRADE_END_DATE))
-    parser.add_argument('--data_file', default=FILE_PATH, help='Trade data file')
+    parser.add_argument('-s','--start_date', default=TRADE_START_DATE, help='Trade start date (default: {})'.format(TRADE_START_DATE))
+    parser.add_argument('-e','--end_date', default=TRADE_END_DATE, help='Trade end date (default: {})'.format(TRADE_END_DATE))
+    parser.add_argument('-p','--trade_file_path', default=TRADE_FILE_PATH, help='Trade data file')
+    parser.add_argument('-P','--train_file_path', default=TRAIN_FILE_PATH, help='Train data file')    
 
     args = parser.parse_args()
     TRADE_START_DATE = args.start_date
     TRADE_END_DATE = args.end_date
     
-    processed_full = pd.read_csv(args.data_file)
+    processed_full = handle_diff(args.data_file, args.train_file)
     trade = data_split(processed_full, TRADE_START_DATE, TRADE_END_DATE)
     
     stock_dimension = len(trade.tic.unique())
     state_space = 1 + 2*stock_dimension + len(INDICATORS)*stock_dimension
-    print(f"Stock Dimension: {stock_dimension}, State Space: {state_space}")
+    print(f"Stock Dimension: {stock_dimension}, State Space: {state_space}, len(INDICATORS): {len(INDICATORS)}")
 
     buy_cost_list = sell_cost_list = [0.001] * stock_dimension
     num_stock_shares = [0] * stock_dimension
