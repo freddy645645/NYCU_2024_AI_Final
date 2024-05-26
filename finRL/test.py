@@ -19,6 +19,7 @@ TRAIN_FILE_PATH = 'train_data.csv'
 TRADE_FILE_PATH = 'trade_data.csv'
 
 
+
 # PPO configs
 PPO_PARAMS = {
     "n_steps": 2048,
@@ -90,7 +91,6 @@ if __name__ == '__main__':
 
     # Backtesting
     df_result_ppo, df_actions_ppo = DRLAgent.DRL_prediction(model=trained_ppo, environment = e_trade_gym)
-
     print("==============Get Backtest Results===========")
     perf_stats_all = backtest_stats(account_value=df_result_ppo)
     
@@ -102,3 +102,4 @@ if __name__ == '__main__':
     plt.savefig("plot.png")
     
     df_result_ppo.to_csv("results.csv", index=False)
+    df_actions_ppo.to_csv("actions.csv", index=False)
