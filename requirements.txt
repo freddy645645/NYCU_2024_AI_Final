@@ -1,3 +1,3 @@
-swig
-box2d
-git+https://github.com/AI4Finance-Foundation/FinRL.git
+torch
+numpy
+pykan==0.0.5

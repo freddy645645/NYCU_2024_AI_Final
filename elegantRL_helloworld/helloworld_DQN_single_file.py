@@ -71,14 +71,25 @@ class QNet(nn.Module):  # `nn.Module` is a PyTorch module for neural network
             action = torch.randint(self.action_dim, size=(state.shape[0], 1))
         return action
 
-
+from kan import KAN
 def build_mlp(dims: [int]) -> nn.Sequential:  # MLP (MultiLayer Perceptron)
+    """
     net_list = []
     for i in range(len(dims) - 1):
         net_list.extend([nn.Linear(dims[i], dims[i + 1]), nn.ReLU()])
     del net_list[-1]  # remove the activation of output layer
-    return nn.Sequential(*net_list)
-
+    return nn.Sequential(*net_list) 
+    """
+    print(dims)
+    return KAN(
+            width=[4,8,2],
+            grid=5,
+            k=3,
+            bias_trainable=False,
+            sp_trainable=False,
+            sb_trainable=False,
+            device=0
+        )
 
 def get_gym_env_args(env, if_print: bool) -> dict:
     if {'unwrapped', 'observation_space', 'action_space', 'spec'}.issubset(dir(env)):  # isinstance(env, gym.Env):
@@ -335,7 +346,7 @@ def get_rewards_and_steps(env, actor, if_render: bool = False) -> (float, int): 
     state = env.reset()
     episode_steps = 0
     cumulative_returns = 0.0  # sum of rewards in an episode
-    for episode_steps in range(12345):
+    for episode_steps in range(200):
         tensor_state = torch.as_tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
         tensor_action = actor(tensor_state).argmax(dim=1)
         action = tensor_action.detach().cpu().numpy()[0]  # not need detach(), because using torch.no_grad() outside
@@ -358,10 +369,10 @@ def train_dqn_for_cartpole():
     }  # env_args = get_gym_env_args(env=gym.make('CartPole-v0'), if_print=True)
 
     args = Config(agent_class=AgentDQN, env_class=gym.make, env_args=env_args)  # see `Config` for explanation
-    args.break_step = int(2e5)  # break training if 'total_step > break_step'
+    args.break_step = int(5000)  # break training if 'total_step > break_step'
     args.net_dims = (64, 32)  # the middle layer dimension of MultiLayer Perceptron
-    args.gamma = 0.95  # discount factor of future rewards
-
+    args.gamma = 0.99  # discount factor of future rewards
+    args.eval_per_step= 200
     train_agent(args)
 
 
