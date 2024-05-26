@@ -8,11 +8,11 @@ from finrl.main import check_and_make_directories
 from finrl.config import INDICATORS, TRAINED_MODEL_DIR, RESULTS_DIR
 from finrl.config import INDICATORS
 
-# Contestants are welcome to split the data in their own way for model tuning
-TRAIN_START_DATE = '2010-01-01'
-TRAIN_END_DATE = '2018-01-01'
 
-processed_full = pd.read_csv('AAPL.csv')
+processed_full = pd.read_csv('train_data.csv')
+TRAIN_START_DATE = processed_full['date'].min() #2010-07-11
+TRAIN_END_DATE = processed_full['date'].max() #2023-10-24
+
 train = data_split(processed_full, TRAIN_START_DATE,TRAIN_END_DATE)
 
 # Environment configs
