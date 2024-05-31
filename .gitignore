@@ -160,4 +160,4 @@ cython_debug/
 #.idea/
 
 # Sublime Text
-**/ppo/events.out.**
+**/ppo/*
