@@ -3,21 +3,21 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
 
+from train import INDICATORS
+
 from finrl.meta.preprocessor.preprocessors import data_split
-from finrl.config import INDICATORS
 from finrl.meta.env_stock_trading.env_stocktrading import StockTradingEnv
 from finrl.agents.stablebaselines3.models import DRLAgent
 from stable_baselines3 import PPO
 from finrl.main import check_and_make_directories
-from finrl.config import INDICATORS, TRAINED_MODEL_DIR, RESULTS_DIR, DATA_SAVE_DIR
+from finrl.config import TRAINED_MODEL_DIR, RESULTS_DIR, DATA_SAVE_DIR
 from finrl.plot import backtest_stats
 
 # Contestants are welcome to split the data in their own way for model tuning
-TRADE_START_DATE = '2023-10-25'
-TRADE_END_DATE = '2024-04-24'
 TRAIN_FILE_PATH =  os.path.join(DATA_SAVE_DIR, 'train_data.csv')
 TRADE_FILE_PATH = os.path.join(DATA_SAVE_DIR, 'trade_data.csv')
-
+TRADE_START_DATE = pd.read_csv(TRADE_FILE_PATH)['date'].min()
+TRADE_END_DATE = pd.read_csv(TRADE_FILE_PATH)['date'].max()
 
 # PPO configs
 PPO_PARAMS = {
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     # PPO agent
     agent = DRLAgent(env = e_trade_gym)
     model_ppo = agent.get_model("ppo", model_kwargs = PPO_PARAMS)
-    trained_ppo = PPO.load(TRAINED_MODEL_DIR + '/trained_ppo')
+    trained_ppo = PPO.load(os.path.join(TRAINED_MODEL_DIR, 'trained_ppo'))
 
     # Backtesting
     df_result_ppo, df_actions_ppo = DRLAgent.DRL_prediction(model=trained_ppo, environment = e_trade_gym)

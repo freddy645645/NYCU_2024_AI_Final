@@ -6,15 +6,15 @@ import os, sys
 import argparse
 
 from finrl.meta.preprocessor.yahoodownloader import YahooDownloader
-from finrl.meta.preprocessor.preprocessors import FeatureEngineer, data_split
+from finrl.meta.preprocessor.preprocessors import FeatureEngineer
 from finrl import config_tickers
 from finrl.config import INDICATORS, DATA_SAVE_DIR
 
 import itertools
 
 # Constants
-START_DATE = '2023-10-25'
-END_DATE = '2024-04-24'
+START_DATE = '2020-07-01'
+END_DATE = '2023-12-31'
 TICKER_LIST = 'DOW_30_TICKER'
 FILE_PATH = 'trade_data.csv'
 
