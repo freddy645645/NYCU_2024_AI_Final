@@ -7,7 +7,7 @@ from stable_baselines3.common.logger import configure
 from finrl.main import check_and_make_directories
 from finrl.config import TRAINED_MODEL_DIR, RESULTS_DIR, DATA_SAVE_DIR
 
-INDICATORS = ["macd", "boll_ub", "boll_lb", "rsi_30", "cci_30", "dx_30", "close_30_sma"]
+INDICATORS = ["boll_ub", "boll_lb", "rsi_30", "dx_30", "close_30_sma"]
 
 processed_full = pd.read_csv(os.path.join(DATA_SAVE_DIR, 'train_data.csv'))
 TRAIN_START_DATE = processed_full['date'].min() #2010-07-01
