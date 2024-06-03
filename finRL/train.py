@@ -1,18 +1,17 @@
+import os
 import pandas as pd
 from finrl.meta.preprocessor.preprocessors import data_split
-from finrl.config import INDICATORS
 from finrl.meta.env_stock_trading.env_stocktrading import StockTradingEnv
 from finrl.agents.stablebaselines3.models import DRLAgent
 from stable_baselines3.common.logger import configure
 from finrl.main import check_and_make_directories
-from finrl.config import INDICATORS, TRAINED_MODEL_DIR, RESULTS_DIR
-from finrl.config import INDICATORS
+from finrl.config import TRAINED_MODEL_DIR, RESULTS_DIR, DATA_SAVE_DIR
 
+INDICATORS = ["macd", "boll_ub", "boll_lb", "rsi_30", "cci_30", "dx_30", "close_30_sma"]
 
-processed_full = pd.read_csv('train_data.csv')
-TRAIN_START_DATE = processed_full['date'].min() #2010-07-11
+processed_full = pd.read_csv(os.path.join(DATA_SAVE_DIR, 'train_data.csv'))
+TRAIN_START_DATE = processed_full['date'].min() #2010-07-01
 TRAIN_END_DATE = processed_full['date'].max() #2023-10-24
-
 train = data_split(processed_full, TRAIN_START_DATE,TRAIN_END_DATE)
 
 # Environment configs
@@ -66,4 +65,4 @@ if __name__ == '__main__':
                                 tb_log_name='ppo',
                                 total_timesteps=80000)
     
-    trained_ppo.save(TRAINED_MODEL_DIR + '/trained_ppo')
+    trained_ppo.save(os.path.join(TRAINED_MODEL_DIR, 'trained_ppo'))
