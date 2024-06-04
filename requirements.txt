@@ -1,3 +1,6 @@
 torch
 numpy
 pykan==0.0.5
+pandas
+matplotlib
+finrl
