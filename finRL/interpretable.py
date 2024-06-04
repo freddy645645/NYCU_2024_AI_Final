@@ -17,9 +17,11 @@ import numpy as np
 
 # Contestants are welcome to split the data in their own way for model tuning
 TRADE_START_DATE = '2010-01-01'
-TRADE_END_DATE = '2018-01-01'
-FILE_PATH = 'AAPL.csv'
-hidden_widths=(5,)
+TRADE_END_DATE = '2020-06-29'
+FILE_PATH = 'datasets/train_data.csv'
+INDICATORS = [ "macd", "boll_ub", "boll_lb", "rsi_30", "cci_30", "dx_30", "close_30_sma"]
+# "money","stock","close"
+HIDDEN_WIDTH=(3,)
 # PPO configs
 PPO_PARAMS = {
     "n_steps": 2048,
@@ -52,6 +54,7 @@ if __name__ == '__main__':
     parser.add_argument('--end_date', default=TRADE_END_DATE, help='Trade end date (default: {})'.format(TRADE_END_DATE))
     parser.add_argument('--data_file', default=FILE_PATH, help='Trade data file')
 
+    # args = parser.parse_known_args()[0]
     args = parser.parse_args()
     TRADE_START_DATE = args.start_date
     TRADE_END_DATE = args.end_date
@@ -102,20 +105,28 @@ if __name__ == '__main__':
         Act.append(np.array(act))
         if done:
             break
-    ObsArr=np.array(Obs)
-    ActArr=np.array(Act)
-    ObsTen=torch.tensor(ObsArr).float().to(device)
-    ActTen=torch.tensor(ActArr).float().to(device)
     
-    print(ObsArr.shape,ActArr.shape)
-    dataset={'train_input': ObsTen,
-             'train_label': ActTen,
-             'test_input': ObsTen,
-             'test_label': ActTen,
-             }
-    agent=InterpretablePolicyExtractor(obs_dim=ObsArr.shape[1],act_dim=ActArr.shape[1],hidden_widths=(5,),device=device)
-    agent.train_from_dataset(dataset,steps=30)
-    agent.policy.prune()
-    agent.policy.prune()
-    agent.policy.plot(mask=True,scale=10)
-    plt.savefig("kan-policy.png")
+    Obs=np.array(Obs)
+    Act=np.array(Act)
+    stocks=trade.tic.unique()
+    stocks_Obs=[np.concatenate((Obs[:,0].reshape(-1,1),Obs[:,i+1:state_space:stock_dimension]),axis=1) for i in range(stock_dimension)]
+    stocks_Act=[Act[:,i].reshape(-1,1) for i in range(stock_dimension)]
+
+    input_names=["money","close","holding",*INDICATORS]
+
+    for stock,obs,act in zip(stocks,stocks_Obs,stocks_Act):
+        obsTen=torch.tensor(obs).float().to(device)
+        actTen=torch.tensor(act).float().to(device)
+        dataset={'train_input': obsTen,
+                'train_label': actTen,
+                'test_input': obsTen,
+                'test_label': actTen,
+                }
+        agent=InterpretablePolicyExtractor(obs_dim=obs.shape[1],act_dim=act.shape[1],hidden_widths=HIDDEN_WIDTH,device=device)
+        agent.train_from_dataset(dataset,steps=50)
+        #agent.policy.prune()
+        #agent.policy.prune()
+        agent.policy.plot(scale=10, beta=100, title=f'{stock} KAN')#in_vars=input_names,
+        print(stock)
+        plt.savefig(f"pics/{stock}-kan-policy.png")
+        
