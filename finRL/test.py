@@ -101,4 +101,3 @@ if __name__ == '__main__':
     plt.savefig(os.path.join(RESULTS_DIR, 'plot.png'))
     
     df_result_ppo.to_csv(os.path.join(RESULTS_DIR, 'results.csv'), index=False)
-    df_actions_ppo.to_csv(os.path.join(RESULTS_DIR, 'actions.csv'), index=False)
