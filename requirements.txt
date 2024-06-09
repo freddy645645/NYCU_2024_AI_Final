@@ -3,4 +3,4 @@ numpy
 pykan==0.0.5
 pandas
 matplotlib
-finrl
+git+https://github.com/AI4Finance-Foundation/FinRL.git

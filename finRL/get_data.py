@@ -5,7 +5,7 @@ import yfinance as yf
 import os, sys
 import argparse
 
-from yahoodownloader import YahooFinanceProcessor as YahooDownloader
+from finrl.meta.data_processors.processor_yahoofinance import YahooFinanceProcessor as YahooDownloader 
 from finrl.meta.preprocessor.preprocessors import FeatureEngineer
 from finrl import config_tickers
 from finrl.config import INDICATORS, DATA_SAVE_DIR
@@ -17,13 +17,13 @@ START_DATE = '2024-05-01'
 END_DATE = '2024-05-15'
 TICKER_LIST = 'DOW_30_TICKER'
 FILE_PATH = 'trade_data.csv'
-TIME_INTERVAL = '1h'
+TIME_INTERVAL = '1H'
 
 def handle_args():
     parser = argparse.ArgumentParser(
         description='Fetch and preprocess data for training or testing.',
         usage='python get_data.py [--train] [-s START_DATE] [-e END_DATE] [-t TIME_INTERVAL] [-p FILE_PATH] [-L TICKER_LIST] [-T TICKER [TICKER ...]]',
-        epilog='Example: python get_data.py -s 2023-10-25 -e 2024-04-24 -t 1h -p trade_data.csv -L DOW_30_TICKER'
+        epilog='Example: python get_data.py -s 2023-10-25 -e 2024-04-24 -t 1H -p trade_data.csv -L DOW_30_TICKER'
     )
     
     parser.add_argument('-i', '--interactive',
@@ -45,7 +45,7 @@ def handle_args():
                         metavar='',
                         type=str, 
                         help='''Time interval for data fetch (default: {}). 
-                                Options: 1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo'''.format(TIME_INTERVAL))
+                                Options: 1Min, 2Min, 5Min, 15Min, 30Min, 60Min, 90Min, 1H, 1D, 5D, 1W, 1M, 3M'''.format(TIME_INTERVAL))
     parser.add_argument('--train', 
                         action='store_true',
                         help='Set data file to train_data.csv')
@@ -73,15 +73,17 @@ def interact():
     start_date = str(input(f"Start date ({START_DATE}): ")) or START_DATE
     end_date = str(input(f"End date ({END_DATE}): ")) or END_DATE
     file_path = str(input(f"Data file ({FILE_PATH}): ")) or FILE_PATH
+    print("\nTime interval for data fetch. Options: 1Min, 2Min, 5Min, 15Min, 30Min, 60Min, 90Min, 1H, 1D, 5D, 1W, 1M, 3M")
+    time_interval = str(input(f"Time interval ({TIME_INTERVAL}): ")) or TIME_INTERVAL
     print(f"\nTicker list in config_tickers.py. Enter 'help' for list.")
     ticker_list = str(input(f"Ticker list in config_tickers.py ({TICKER_LIST}): ")) or TICKER_LIST
-    if ticker_list == 'help':
+    if ticker_list == 'help' or ticker_list == 'h':
         print("\nAvailable ticker lists in config_tickers.py:")
         print([attr for attr in dir(config_tickers) if not attr.startswith('__')])
         ticker_list = str(input(f"Ticker list in config_tickers.py ({TICKER_LIST}): ")) or TICKER_LIST
     print("\nIf you want to fetch data for specific tickers, enter them below. It will override the ticker list.")
     tickers = input("Tickers (separated by space, default: None): ").split()
-    return argparse.Namespace(interactive=True, train=False, start_date=start_date, end_date=end_date, file_path=file_path, ticker_list=ticker_list, tickers=tickers)
+    return argparse.Namespace(interactive=True, train=False, start_date=start_date, end_date=end_date, time_interval=time_interval, file_path=file_path, ticker_list=ticker_list, tickers=tickers)
 
 class DataFetcher:
     def __init__(self, start_date=START_DATE, end_date=END_DATE, time_interval=TIME_INTERVAL, ticker_list=TICKER_LIST):
