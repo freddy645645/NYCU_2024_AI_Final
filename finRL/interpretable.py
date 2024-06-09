@@ -2,24 +2,23 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
 
+from train import INDICATORS
 from finrl.meta.preprocessor.preprocessors import data_split
-from finrl.config import INDICATORS
 from finrl.meta.env_stock_trading.env_stocktrading import StockTradingEnv
 from finrl.agents.stablebaselines3.models import DRLAgent
 from stable_baselines3 import PPO
 from finrl.main import check_and_make_directories
-from finrl.config import INDICATORS, TRAINED_MODEL_DIR
-from finrl.config import INDICATORS
+from finrl.config import TRAINED_MODEL_DIR
 from finrl.plot import backtest_stats
 import torch
 from kan import KAN
 import numpy as np
 
 # Contestants are welcome to split the data in their own way for model tuning
-TRADE_START_DATE = '2010-01-01'
-TRADE_END_DATE = '2020-06-29'
-FILE_PATH = 'datasets/train_data.csv'
-INDICATORS = [ "macd", "boll_ub", "boll_lb", "rsi_30", "cci_30", "dx_30", "close_30_sma"]
+TRADE_START_DATE = '2024-05-01'
+TRADE_END_DATE = '2024-05-15'
+FILE_PATH = 'datasets/trade_data.csv'
+# INDICATORS = [ "macd", "boll_ub", "boll_lb", "rsi_30", "cci_30", "dx_30", "close_30_sma"]
 # "money","stock","close"
 HIDDEN_WIDTH=(3,)
 # PPO configs
@@ -50,9 +49,9 @@ class InterpretablePolicyExtractor:
 if __name__ == '__main__':
     # We will use unseen, post-deadline data for testing
     parser = argparse.ArgumentParser(description='Description of program')
-    parser.add_argument('--start_date', default=TRADE_START_DATE, help='Trade start date (default: {})'.format(TRADE_START_DATE))
-    parser.add_argument('--end_date', default=TRADE_END_DATE, help='Trade end date (default: {})'.format(TRADE_END_DATE))
-    parser.add_argument('--data_file', default=FILE_PATH, help='Trade data file')
+    parser.add_argument('-s', '--start_date', default=TRADE_START_DATE, help='Trade start date (default: {})'.format(TRADE_START_DATE))
+    parser.add_argument('-e', '--end_date', default=TRADE_END_DATE, help='Trade end date (default: {})'.format(TRADE_END_DATE))
+    parser.add_argument('-p', '--file_path', default=FILE_PATH, help='Trade data file')
 
     # args = parser.parse_known_args()[0]
     args = parser.parse_args()
@@ -60,7 +59,7 @@ if __name__ == '__main__':
     TRADE_END_DATE = args.end_date
     device ='cpu' #torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(device)
-    processed_full = pd.read_csv(args.data_file)
+    processed_full = pd.read_csv(args.file_path)
     trade = data_split(processed_full, TRADE_START_DATE, TRADE_END_DATE)
     
     stock_dimension = len(trade.tic.unique())
@@ -124,8 +123,7 @@ if __name__ == '__main__':
                 }
         agent=InterpretablePolicyExtractor(obs_dim=obs.shape[1],act_dim=act.shape[1],hidden_widths=HIDDEN_WIDTH,device=device)
         agent.train_from_dataset(dataset,steps=50)
-        #agent.policy.prune()
-        #agent.policy.prune()
+        agent.policy.prune(threshold=0.0001)
         agent.policy.plot(scale=10, beta=100, title=f'{stock} KAN')#in_vars=input_names,
         print(stock)
         plt.savefig(f"pics/{stock}-kan-policy.png")
