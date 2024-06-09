@@ -11,7 +11,7 @@ from finrl.agents.stablebaselines3.models import DRLAgent
 from stable_baselines3 import PPO
 from finrl.main import check_and_make_directories
 from finrl.config import TRAINED_MODEL_DIR, RESULTS_DIR, DATA_SAVE_DIR
-from finrl.plot import backtest_stats
+# from finrl.plot import backtest_stats
 
 # Contestants are welcome to split the data in their own way for model tuning
 TRAIN_FILE_PATH =  os.path.join(DATA_SAVE_DIR, 'train_data.csv')
@@ -90,14 +90,13 @@ if __name__ == '__main__':
 
     # Backtesting
     df_result_ppo, df_actions_ppo = DRLAgent.DRL_prediction(model=trained_ppo, environment = e_trade_gym)
-    print("==============Get Backtest Results===========")
-    perf_stats_all = backtest_stats(account_value=df_result_ppo)
-    
+    df_result_ppo.to_csv(os.path.join(RESULTS_DIR, 'results.csv'), index=False)
+    df_actions_ppo.to_csv(os.path.join(RESULTS_DIR, 'actions.csv'), index=False)
     """Plotting"""
     plt.rcParams["figure.figsize"] = (15,5)
     plt.figure()
     
     df_result_ppo.plot()
     plt.savefig(os.path.join(RESULTS_DIR, 'plot.png'))
-    
-    df_result_ppo.to_csv(os.path.join(RESULTS_DIR, 'results.csv'), index=False)
+    # print("==============Get Backtest Results===========")
+    # perf_stats_all = backtest_stats(account_value=df_result_ppo)
